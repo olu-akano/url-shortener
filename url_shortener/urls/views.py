@@ -2,12 +2,11 @@ from django.shortcuts import render
 import random
 from django.http import HttpResponse
 import string
+from .models import Urls
+from .forms import NewUrlForm
 
 def home(request):
-    return render(request, 'home.html')
-
-def show_url(request):
-    return render(request, 'showurl.html')
+    return render(request, 'index.html')
 
 def newurl(length):
     str = string.ascii_lowercase
@@ -15,20 +14,22 @@ def newurl(length):
 
 def create_url(request):
     if request.method == 'POST':
-        form = NewUrlForm(request.POST)
+        url = NewUrlForm(request.POST)
         if form.is_valid():
+            new_url = url.save()
             short_url = newurl(5)
-            # new_url = request.POST['new_url']
-            new_url = Urls(url='test', short_url='short_url')
-            url.save()
-            return redirect("new-url", result=url)
+            form = NewUrlForm()
+            data = {
+                'form': form,
+                'shortened_url': f'http://127.0.0.1:8000/{short_url}'
+            }
+            return render(request, 'index.html', data)
     else:
         form = NewUrlForm()
-        data = Urls.objects.all()
-        context = {
+        data = {
             'form': form,
-            'data': data
+            'shortened_url': ''
         }
-        return render(request, 'home.html', context)
+        return render(request, 'index.html', data)
 
 
